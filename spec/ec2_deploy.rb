@@ -19,6 +19,7 @@ describe "EC2 Deploy" do
     }
     TestApp.install(options)
     TestApp.cap('deploy:check')
+    puts TestApp.get_ec2_hosts
     $?.success?.should eq true
   end
 

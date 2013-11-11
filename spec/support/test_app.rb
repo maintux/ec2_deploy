@@ -153,4 +153,8 @@ module TestApp
     FileUtils.mv(config_path, location)
   end
 
+  def get_ec2_hosts
+    File.read(test_stage_path).lines.grep('role :web')
+  end
+
 end
