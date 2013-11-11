@@ -2,18 +2,18 @@ require 'fileutils'
 module TestApp
   extend self
 
-  def install(ec2_deploy_access_key=nil,ec2_deploy_secret_access=nil,ec2_deploy_tag_name='role',ec2_deploy_tag_value='capistrano')
+  def install(options={})
     custom_config = ""
-    if ec2_deploy_access_key and ec2_deploy_secret_access
+    if options[:ec2_deploy_access_key] and options[:ec2_deploy_secret_access]
       custom_config = %{
-        set :ec2_deploy_access_key, '#{ec2_deploy_access_key}'
-        set :ec2_deploy_secret_access, '#{ec2_deploy_secret_access}'
-        set :ec2_deploy_tag_name, '#{ec2_deploy_tag_name}'
-        set :ec2_deploy_tag_value, '#{ec2_deploy_tag_value}'
+        set :ec2_deploy_access_key, '#{options[:ec2_deploy_access_key]}'
+        set :ec2_deploy_secret_access, '#{options[:ec2_deploy_secret_access]}'
+        set :ec2_deploy_tag_name, '#{options[:ec2_deploy_tag_name]||'role'}'
+        set :ec2_deploy_tag_value, '#{options[:ec2_deploy_tag_value]||'web'}'
       }
     end
     custom_config = custom_config + "require 'ec2_deploy'"
-    install_test_app_with(default_config + custom_config)
+    install_test_app_with(custom_config + default_config)
   end
 
   def default_config
@@ -21,6 +21,7 @@ module TestApp
       set :application, 'test_app'
       set :repo_url, 'git://github.com/capistrano/capistrano.git'
       set :branch, 'master'
+      role :web, *ec2_hosts
     }
   end
 
