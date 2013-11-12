@@ -22,6 +22,12 @@ module TestApp
       set :repo_url, 'git://github.com/capistrano/capistrano.git'
       set :branch, 'master'
       role :web, *ec2_hosts
+      namespace :test do
+        desc "Get EC2 hosts"
+        task :get_ec2_hosts do
+          puts ec2_hosts.inspect
+        end
+      end
     }
   end
 
@@ -31,7 +37,7 @@ module TestApp
 
     File.open(gemfile, 'w+') do |file|
       file.write "gem 'capistrano'\n"
-      file.write "gem 'ec2_deploy', path: '#{path_to_ec2_deploy}'"
+      file.write "gem 'ec2_deploy', path: '#{path_to_ec2_deploy}'\n"
     end
 
     Dir.chdir(test_app_path) do
@@ -42,7 +48,7 @@ module TestApp
   def install_test_app_with(config)
     create_test_app
     Dir.chdir(test_app_path) do
-      %x[bundle exec capify .;mkdir config/deploy]
+      %x[bundle exec cap install STAGES=test]
     end
     write_local_deploy_file(config)
   end
@@ -61,16 +67,8 @@ module TestApp
     end
   end
 
-  def create_shared_directory(path)
-    FileUtils.mkdir_p(shared_path.join(path))
-  end
-
-  def create_shared_file(path)
-    File.open(shared_path.join(path), 'w')
-  end
-
   def cap(task)
-    run "bundle exec cap -n #{task}"
+    run "bundle exec cap test #{task} --dry-run"
   end
 
   def run(command)
@@ -81,7 +79,7 @@ module TestApp
   end
 
   def test_stage_path
-    test_app_path.join('config/deploy.rb')
+    test_app_path.join('config/deploy/test.rb')
   end
 
   def test_app_path
@@ -108,10 +106,6 @@ module TestApp
     Time.now.utc.strftime("%Y%m%d%H%M%S")
   end
 
-  def repo_path
-    deploy_to.join('repo')
-  end
-
   def path_to_ec2_deploy
     File.expand_path('.')
   end
@@ -124,37 +118,11 @@ module TestApp
     test_app_path.join('Capfile')
   end
 
-  def current_user
-    `whoami`.chomp
-  end
-
-  def task_dir
-    test_app_path.join('lib/capistrano/tasks')
-  end
-
-  def copy_task_to_test_app(source)
-    FileUtils.cp(source, task_dir)
-  end
-
-  def config_path
-    test_app_path.join('config')
-  end
-
-  def move_configuration_to_custom_location(location)
-    prepend_to_capfile(
-      %{
-        set :stage_config_path, "app/config/deploy"
-        set :deploy_config_path, "app/config/deploy.rb"
-      }
-    )
-
-    location = test_app_path.join(location)
-    FileUtils.mkdir_p(location)
-    FileUtils.mv(config_path, location)
-  end
-
   def get_ec2_hosts
-    File.read(test_stage_path).lines.grep('role :web')
+    Dir.chdir(test_app_path) do
+      `bundle exec cap -n test:get_ec2_hosts`
+    end
+    #File.read(test_stage_path).lines.grep(/role :web/)
   end
 
 end
