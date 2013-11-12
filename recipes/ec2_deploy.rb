@@ -20,7 +20,7 @@ Capistrano::Configuration.instance.load do
   ec2 = AWS.ec2
   hosts = []
   ec2.regions.each do |region|
-    hosts += region.instances.collect{|i| i.private_ip_address if i.tags.to_h[ec2_deploy_tag_name].eql? ec2_deploy_tag_value}.compact
+    hosts += region.instances.collect{|i| i.ip_address||i.private_ip_address if i.tags.to_h[ec2_deploy_tag_name].eql? ec2_deploy_tag_value}.compact
   end
   abort("No servers found with tag_name #{ec2_deploy_tag_name} and value #{ec2_deploy_tag_value}") if hosts.empty?
 
