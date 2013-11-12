@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'json'
 include TestApp
 
 describe "EC2 Deploy" do
@@ -14,13 +15,12 @@ describe "EC2 Deploy" do
     options = {
       ec2_deploy_access_key: aws_settings["access_key_id"],
       ec2_deploy_secret_access: aws_settings["secret_access_key"],
-      ec2_deploy_tag_name: 'role',
-      ec2_deploy_tag_value: 'teamartist-org-web'
+      ec2_deploy_tag_name: aws_settings["tag_name"],
+      ec2_deploy_tag_value: aws_settings["tag_value"]
     }
     TestApp.install(options)
-    TestApp.cap('deploy:check')
-    puts TestApp.get_ec2_hosts.inspect
-    $?.success?.should eq true
+    hosts = JSON.parse(TestApp.get_ec2_hosts)
+    hosts.should =~ aws_settings["test_hosts"]
   end
 
 end

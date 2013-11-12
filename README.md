@@ -1,6 +1,6 @@
 # EC2Deploy
 
-TODO: Write a gem description
+Capistrano recipe for deploy in AWS EC2 infrastructure with auto scaling
 
 ## Installation
 
@@ -11,10 +11,6 @@ Add this line to your application's Gemfile:
 And then execute:
 
     $ bundle
-
-Or install it yourself as:
-
-    $ gem install ec2_deploy
 
 ## Usage
 

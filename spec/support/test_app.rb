@@ -18,14 +18,15 @@ module TestApp
 
   def default_config
     %{
+      require 'json'
       set :application, 'test_app'
       set :repo_url, 'git://github.com/capistrano/capistrano.git'
       set :branch, 'master'
       role :web, *ec2_hosts
-      namespace :test do
+      namespace :spec do
         desc "Get EC2 hosts"
         task :get_ec2_hosts do
-          puts ec2_hosts.inspect
+          puts JSON.generate(ec2_hosts)
         end
       end
     }
@@ -48,7 +49,7 @@ module TestApp
   def install_test_app_with(config)
     create_test_app
     Dir.chdir(test_app_path) do
-      %x[bundle exec cap install STAGES=test]
+      %x[bundle exec capify .;]
     end
     write_local_deploy_file(config)
   end
@@ -68,7 +69,7 @@ module TestApp
   end
 
   def cap(task)
-    run "bundle exec cap test #{task} --dry-run"
+    run "bundle exec cap #{task} --dry-run"
   end
 
   def run(command)
@@ -79,7 +80,7 @@ module TestApp
   end
 
   def test_stage_path
-    test_app_path.join('config/deploy/test.rb')
+    test_app_path.join('config/deploy.rb')
   end
 
   def test_app_path
@@ -120,9 +121,8 @@ module TestApp
 
   def get_ec2_hosts
     Dir.chdir(test_app_path) do
-      `bundle exec cap -n test:get_ec2_hosts`
+      `bundle exec cap -n spec:get_ec2_hosts`
     end
-    #File.read(test_stage_path).lines.grep(/role :web/)
   end
 
 end
