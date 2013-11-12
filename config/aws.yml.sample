@@ -1,2 +1,7 @@
-access_key_id: "your_access_key_id"
-secret_access_key: "your_secret_access_key"
+access_key_id: 'your_access_key_id'
+secret_access_key: 'your_secret_access_key'
+tag_name: 'role'
+tag_value: 'teamartist-org-web'
+test_hosts:
+  - 10.0.1.1
+  - 10.0.1.2
